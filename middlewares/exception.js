@@ -1,12 +1,18 @@
+const config = require('../config/config')
 const { HttpException } = require('../core/http-exception')
 
 const catchError = async (ctx, next) => {
-  console.log('中间件执行了')
   try {
     await next()
   } catch (error) {
+    const isHttpexception = error instanceof HttpException
+
+    if (config.enviroment === 'dev' && !isHttpexception) {
+      console.log(error)
+      throw error
+    }
     //已知的异常信息
-    if (error instanceof HttpException) {
+    if (isHttpexception) {
       ctx.body = {
         msg: error.msg,
         error_code: error.errorCode,
